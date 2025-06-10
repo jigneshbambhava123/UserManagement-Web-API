@@ -1,4 +1,5 @@
 using Npgsql;
+using UserManagementApi.Helper;
 using UserManagementApi.ViewModels;
 
 namespace UserManagementApi.Services;
@@ -13,6 +14,26 @@ public class UserService : IUserService
         _configuration = configuration;
     }
 
+    // public async Task<(bool Success, string Message)> CreateUser(User user)
+    // {
+    //     if (await EmailExists(user.Email))
+    //         return (false, "A user with this email already exists.");
+
+    //     await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+    //     await conn.OpenAsync();
+
+    //     await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber)", conn);
+    //     cmd.Parameters.AddWithValue("p_firstname", user.Firstname);
+    //     cmd.Parameters.AddWithValue("p_lastname", user.Lastname);
+    //     cmd.Parameters.AddWithValue("p_email", user.Email);
+    //     cmd.Parameters.AddWithValue("p_password", user.Password);
+    //     cmd.Parameters.AddWithValue("p_roleid", user.RoleId);
+    //     cmd.Parameters.AddWithValue("p_phonenumber", user.PhoneNumber);
+
+    //     await cmd.ExecuteNonQueryAsync();
+    //     return (true, "User created successfully.");
+    // }
+
     public async Task<(bool Success, string Message)> CreateUser(User user)
     {
         if (await EmailExists(user.Email))
@@ -21,17 +42,19 @@ public class UserService : IUserService
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
-        await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber)", conn);
+        await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_passwordhash)", conn);
         cmd.Parameters.AddWithValue("p_firstname", user.Firstname);
         cmd.Parameters.AddWithValue("p_lastname", user.Lastname);
         cmd.Parameters.AddWithValue("p_email", user.Email);
         cmd.Parameters.AddWithValue("p_password", user.Password);
         cmd.Parameters.AddWithValue("p_roleid", user.RoleId);
         cmd.Parameters.AddWithValue("p_phonenumber", user.PhoneNumber);
+        cmd.Parameters.AddWithValue("p_passwordhash", PasswordHasher.HashPassword(user.Password));
 
         await cmd.ExecuteNonQueryAsync();
         return (true, "User created successfully.");
     }
+
 
     public async Task<(bool Success, string Message)> UpdateUser(User user)
     {

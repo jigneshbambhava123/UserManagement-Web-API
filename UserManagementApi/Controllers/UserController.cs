@@ -4,6 +4,7 @@ using UserManagementApi.Services;
 
 namespace UserManagementApi.Controllers;
 
+
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
