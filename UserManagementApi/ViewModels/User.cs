@@ -12,4 +12,6 @@ public class User
     public int RoleId { get; set; }
     public long PhoneNumber { get; set; }
     public bool IsActive { get; set; }
+    public DateTime Dateofbirth { get; set; }  
+
 }

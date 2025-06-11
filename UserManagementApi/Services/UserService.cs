@@ -14,26 +14,6 @@ public class UserService : IUserService
         _configuration = configuration;
     }
 
-    // public async Task<(bool Success, string Message)> CreateUser(User user)
-    // {
-    //     if (await EmailExists(user.Email))
-    //         return (false, "A user with this email already exists.");
-
-    //     await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-    //     await conn.OpenAsync();
-
-    //     await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber)", conn);
-    //     cmd.Parameters.AddWithValue("p_firstname", user.Firstname);
-    //     cmd.Parameters.AddWithValue("p_lastname", user.Lastname);
-    //     cmd.Parameters.AddWithValue("p_email", user.Email);
-    //     cmd.Parameters.AddWithValue("p_password", user.Password);
-    //     cmd.Parameters.AddWithValue("p_roleid", user.RoleId);
-    //     cmd.Parameters.AddWithValue("p_phonenumber", user.PhoneNumber);
-
-    //     await cmd.ExecuteNonQueryAsync();
-    //     return (true, "User created successfully.");
-    // }
-
     public async Task<(bool Success, string Message)> CreateUser(User user)
     {
         if (await EmailExists(user.Email))
@@ -42,7 +22,8 @@ public class UserService : IUserService
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
-        await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_passwordhash)", conn);
+        await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_passwordhash, @p_dateofbirth::date)", conn);
+        
         cmd.Parameters.AddWithValue("p_firstname", user.Firstname);
         cmd.Parameters.AddWithValue("p_lastname", user.Lastname);
         cmd.Parameters.AddWithValue("p_email", user.Email);
@@ -50,10 +31,12 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_roleid", user.RoleId);
         cmd.Parameters.AddWithValue("p_phonenumber", user.PhoneNumber);
         cmd.Parameters.AddWithValue("p_passwordhash", PasswordHasher.HashPassword(user.Password));
+        cmd.Parameters.AddWithValue("p_dateofbirth", user.Dateofbirth.Date); 
 
         await cmd.ExecuteNonQueryAsync();
         return (true, "User created successfully.");
     }
+
 
 
     public async Task<(bool Success, string Message)> UpdateUser(User user)
@@ -126,7 +109,8 @@ public class UserService : IUserService
                 Password = reader.GetString(4),
                 RoleId = reader.GetInt32(5),
                 PhoneNumber = reader.GetInt64(6),
-                IsActive = reader.GetBoolean(7)
+                IsActive = reader.GetBoolean(7),
+                Dateofbirth = reader.GetDateTime(8) 
             });
         }
         return users;
@@ -149,31 +133,31 @@ public class UserService : IUserService
         return exists;
     }
 
-        public async Task<User?> GetUserById(int id)
+    public async Task<User?> GetUserById(int id)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var query = "SELECT * FROM public.get_user_by_id(@p_id)";
+        await using var cmd = new NpgsqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("p_id", id);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
         {
-            await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            await conn.OpenAsync();
-
-            var query = "SELECT * FROM public.get_user_by_id(@p_id)";
-            await using var cmd = new NpgsqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("p_id", id);
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
+            return new User
             {
-                return new User
-                {
-                    Id = reader.GetInt32(0),
-                    Firstname = reader.GetString(1),
-                    Lastname = reader.GetString(2),
-                    Email = reader.GetString(3),
-                    Password = reader.GetString(4),
-                    RoleId = reader.GetInt32(5),
-                    PhoneNumber = reader.GetInt64(6),
-                    IsActive = reader.GetBoolean(7)
-                };
-            }
-            return null;
+                Id = reader.GetInt32(0),
+                Firstname = reader.GetString(1),
+                Lastname = reader.GetString(2),
+                Email = reader.GetString(3),
+                Password = reader.GetString(4),
+                RoleId = reader.GetInt32(5),
+                PhoneNumber = reader.GetInt64(6),
+                IsActive = reader.GetBoolean(7)
+            };
         }
+        return null;
+    }
 
 }
