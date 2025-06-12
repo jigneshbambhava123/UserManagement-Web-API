@@ -10,4 +10,5 @@ public interface IUserService
     Task<IEnumerable<User>> GetUsers();
     Task<bool> EmailExists(string email, int? excludeUserId = null);
     Task<User?> GetUserById(int id);
+
 }

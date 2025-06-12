@@ -52,4 +52,38 @@ public class AccountController : ControllerBase
 
         return Ok(new { token });
     }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromQuery] string email, [FromQuery] string baseUrl)
+    {
+        var result = await _authService.ForgotPasswordAsync(email, baseUrl);
+        if (!result.Success)
+            return Ok(new { token = "", userId = 0, message = result.Message });
+
+        return Ok(new { token = result.Token, userId = result.UserId, message = result.Message });
+    }
+
+    [HttpGet("validate-reset-token")]
+    public async Task<IActionResult> ValidateResetToken(int userId, string token)
+    {
+        var isValid = await _authService.ValidateResetTokenAsync(userId, token);
+
+        if (!isValid)
+            return BadRequest("Invalid or expired token.");
+
+        return Ok("Valid token");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
+    {
+        var result = await _authService.ResetPasswordAsync(model.UserId, model.Token, model.NewPassword);
+        
+        if (result == "User not found." || result == "Invalid or expired token.")
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+
 }

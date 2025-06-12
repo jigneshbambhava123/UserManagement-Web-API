@@ -9,6 +9,7 @@ public class AuthService:IAuthService
 
      private readonly IConfiguration _configuration;
 
+
     public AuthService(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -25,6 +26,39 @@ public class AuthService:IAuthService
 
         return null;
     }
+
+    public async Task<(bool Success, string Token, int UserId, string Message)> ForgotPasswordAsync(string email, string baseUrl)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var cmd = new NpgsqlCommand("SELECT id, email FROM public.users WHERE email = @Email AND \"Isdeleted\" = false", conn);
+        cmd.Parameters.AddWithValue("Email", email);
+
+        var reader = await cmd.ExecuteReaderAsync();
+
+        if (!reader.HasRows)
+            return (false, null,0, "Email not found");
+
+        await reader.ReadAsync();
+        var userId = reader.GetInt32(0);
+        reader.Close();
+
+        var token = Guid.NewGuid().ToString();
+        var expiry = DateTime.UtcNow.AddHours(1);
+
+        var updateCmd = new NpgsqlCommand("UPDATE public.users SET \"PasswordResetToken\" = @Token, \"ResetTokenExpiry\" = @Expiry WHERE id = @UserId", conn);
+        updateCmd.Parameters.AddWithValue("Token", token);
+        updateCmd.Parameters.AddWithValue("Expiry", expiry);
+        updateCmd.Parameters.AddWithValue("UserId", userId);
+        await updateCmd.ExecuteNonQueryAsync();
+
+        var resetLink = $"{baseUrl}/Account/ResetPassword?userId={userId}&token={token}";
+        Console.WriteLine("Reset Password Link: " + resetLink);
+
+        return (true, token, userId, "A password reset link has been generated.");
+    }
+
 
     public async Task<User?> GetUserByEmailAsync(string email)
     {
@@ -60,6 +94,68 @@ public class AuthService:IAuthService
         return user;
     }
 
+    public async Task<bool> ValidateResetTokenAsync(int userId, string token)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
 
+        var cmd = new NpgsqlCommand(@"SELECT ""PasswordResetToken"", ""ResetTokenExpiry"" 
+                                    FROM public.users 
+                                    WHERE id = @UserId AND ""Isdeleted"" = false", conn);
+        cmd.Parameters.AddWithValue("UserId", userId);
+
+        var reader = await cmd.ExecuteReaderAsync();
+
+        if (!reader.HasRows)
+            return false;
+
+        await reader.ReadAsync();
+
+        var storedToken = reader["PasswordResetToken"]?.ToString();
+        var expiry = Convert.ToDateTime(reader["ResetTokenExpiry"]);
+
+        return storedToken == token && DateTime.UtcNow <= expiry;
+    }
+
+    public async Task<string> ResetPasswordAsync(int userId, string token, string newPassword)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var cmd = new NpgsqlCommand(@"SELECT ""PasswordResetToken"", ""ResetTokenExpiry"" 
+                                    FROM public.users 
+                                    WHERE id = @UserId AND ""Isdeleted"" = false", conn);
+        cmd.Parameters.AddWithValue("UserId", userId);
+
+        var reader = await cmd.ExecuteReaderAsync();
+        if (!reader.HasRows)
+            return "User not found.";
+
+        await reader.ReadAsync();
+
+        var storedToken = reader["PasswordResetToken"]?.ToString();
+        var expiry = Convert.ToDateTime(reader["ResetTokenExpiry"]);
+
+        if (storedToken != token || DateTime.UtcNow > expiry)
+            return "Invalid or expired token.";
+
+        reader.Close();
+
+        var hashedPassword = PasswordHasher.HashPassword(newPassword);
+
+        var updateCmd = new NpgsqlCommand(@"UPDATE public.users 
+                                            SET password = @Password, 
+                                                ""PasswordHash"" = @Hashed, 
+                                                ""PasswordResetToken"" = NULL,
+                                                ""ResetTokenExpiry"" = NULL
+                                            WHERE id = @UserId", conn);
+        updateCmd.Parameters.AddWithValue("Password", newPassword);
+        updateCmd.Parameters.AddWithValue("Hashed", hashedPassword);
+        updateCmd.Parameters.AddWithValue("UserId", userId);
+
+        await updateCmd.ExecuteNonQueryAsync();
+
+        return "Your password has been reset successfully.";
+    }
 
 }
