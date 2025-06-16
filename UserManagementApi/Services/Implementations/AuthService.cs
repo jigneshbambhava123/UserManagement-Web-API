@@ -1,8 +1,9 @@
 using Npgsql;
 using UserManagementApi.Helper;
+using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
 
-namespace UserManagementApi.Services;
+namespace UserManagementApi.Services.Implementations;
 
 public class AuthService:IAuthService
 {
@@ -58,7 +59,6 @@ public class AuthService:IAuthService
 
         return (true, token, userId, "A password reset link has been generated.");
     }
-
 
     public async Task<User?> GetUserByEmailAsync(string email)
     {

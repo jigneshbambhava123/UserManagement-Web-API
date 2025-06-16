@@ -4,7 +4,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using UserManagementApi.Services;
+using UserManagementApi.Services.Implementations;
+using UserManagementApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,22 +25,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             ClockSkew = TimeSpan.Zero,
             RoleClaimType = ClaimTypes.Role
         };
-
-        x.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Cookies["AuthToken"];
-                    
-                {
-                    context.Token = accessToken;
-                }
-                return Task.CompletedTask;
-            }
-        };
-        
     }
-    );
+);
 
 // --- START CORS CONFIGURATION ---
 builder.Services.AddCors(options =>
@@ -55,6 +42,8 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IResourceService, ResourceService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -71,7 +60,6 @@ if (app.Environment.IsDevelopment())
 // --- CORS Middleware Usage ---
 app.UseRouting(); 
 app.UseCors("AllowSpecificOrigin"); 
-
 
 app.UseAuthentication();
 app.UseHttpsRedirection();

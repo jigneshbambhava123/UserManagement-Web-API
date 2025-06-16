@@ -1,8 +1,9 @@
 using Npgsql;
 using UserManagementApi.Helper;
+using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
 
-namespace UserManagementApi.Services;
+namespace UserManagementApi.Services.Implementations;
 
 public class UserService : IUserService
 {
@@ -159,7 +160,5 @@ public class UserService : IUserService
         }
         return null;
     }
-
-    
 
 }

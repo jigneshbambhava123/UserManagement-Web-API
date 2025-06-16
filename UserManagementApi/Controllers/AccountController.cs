@@ -4,13 +4,13 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using UserManagementApi.Helper;
-using UserManagementApi.Services;
+using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
 
 namespace UserManagementApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]/[action]")]
 public class AccountController : ControllerBase
 {
     private readonly IAuthService _authService; // your user auth service
@@ -24,7 +24,7 @@ public class AccountController : ControllerBase
         _tokenService = tokenService;
     }
 
-    [HttpPost("login")]
+    [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginViewModel loginModel)
     {
         if (!ModelState.IsValid)
@@ -53,7 +53,7 @@ public class AccountController : ControllerBase
         return Ok(new { token });
     }
 
-    [HttpPost("forgot-password")]
+    [HttpPost]
     public async Task<IActionResult> ForgotPassword([FromQuery] string email, [FromQuery] string baseUrl)
     {
         var result = await _authService.ForgotPasswordAsync(email, baseUrl);
@@ -63,7 +63,7 @@ public class AccountController : ControllerBase
         return Ok(new { token = result.Token, userId = result.UserId, message = result.Message });
     }
 
-    [HttpGet("validate-reset-token")]
+    [HttpGet]
     public async Task<IActionResult> ValidateResetToken(int userId, string token)
     {
         var isValid = await _authService.ValidateResetTokenAsync(userId, token);
@@ -74,7 +74,7 @@ public class AccountController : ControllerBase
         return Ok("Valid token");
     }
 
-    [HttpPost("reset-password")]
+    [HttpPost]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
     {
         var result = await _authService.ResetPasswordAsync(model.UserId, model.Token, model.NewPassword);

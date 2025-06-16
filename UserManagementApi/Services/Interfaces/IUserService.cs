@@ -1,6 +1,6 @@
 using UserManagementApi.ViewModels;
 
-namespace UserManagementApi.Services;
+namespace UserManagementApi.Services.Interfaces;
 
 public interface IUserService
 {

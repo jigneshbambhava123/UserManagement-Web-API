@@ -1,4 +1,4 @@
-namespace UserManagementApi.Services;
+namespace UserManagementApi.Services.Interfaces;
 
 public interface ITokenService
 {

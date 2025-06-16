@@ -2,8 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using UserManagementApi.Services.Interfaces;
 
-namespace UserManagementApi.Services;
+namespace UserManagementApi.Services.Implementations;
 
 public class TokenService: ITokenService
 {
