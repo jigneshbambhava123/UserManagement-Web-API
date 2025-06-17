@@ -49,6 +49,7 @@ public class AccountController : ControllerBase
             "localhost",
             user.Id
         );
+        Console.WriteLine("token"+token);
 
         return Ok(new { token });
     }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using UserManagementApi.ViewModels;
 using UserManagementApi.Services;
 using UserManagementApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UserManagementApi.Controllers;
 

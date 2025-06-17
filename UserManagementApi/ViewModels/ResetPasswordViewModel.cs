@@ -4,7 +4,7 @@ namespace UserManagementApi.ViewModels;
 
 public class ResetPasswordViewModel
 {
-     public int UserId { get; set; }
+    public int UserId { get; set; }
     public string Token { get; set; }
 
     [Required, DataType(DataType.Password)]

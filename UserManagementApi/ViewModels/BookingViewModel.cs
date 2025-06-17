@@ -1,6 +1,6 @@
 namespace UserManagementApi.ViewModels;
 
-public class Booking
+public class BookingViewModel
 {
     public int Id { get; set; }
     public int ResourceId { get; set; }
