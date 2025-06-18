@@ -4,11 +4,10 @@ namespace UserManagementApi.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<(bool Success, string Message)> CreateUser(User user);
-    Task<(bool Success, string Message)> UpdateUser(User user);
-    Task<bool> DeleteUser(int id);
-    Task<IEnumerable<User>> GetUsers();
+    Task<(bool Success, string Message)> CreateUser(UserViewModel userViewModel);
+    Task<(bool Success, string Message)> UpdateUser(UserViewModel userViewModel);
+    Task<(bool Success, string Message)> DeleteUser(int id);
+    Task<IEnumerable<UserViewModel>> GetUsers();
     Task<bool> EmailExists(string email, int? excludeUserId = null);
-    Task<User?> GetUserById(int id);
-
+    Task<UserViewModel?> GetUserById(int id);
 }

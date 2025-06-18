@@ -13,30 +13,30 @@ public class ResourceService : IResourceService
         _configuration = configuration;
     }
 
-    public async Task<(bool Success, string Message)> CreateResource(Resource resource)
+    public async Task<(bool Success, string Message)> CreateResource(ResourceViewModel resourceViewModel)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand("CALL public.create_resource(@p_name, @p_description, @p_quantity)", conn);
-        cmd.Parameters.AddWithValue("p_name", resource.Name);
-        cmd.Parameters.AddWithValue("p_description", resource.Description ?? string.Empty);
-        cmd.Parameters.AddWithValue("p_quantity", resource.Quantity);
+        cmd.Parameters.AddWithValue("p_name", resourceViewModel.Name);
+        cmd.Parameters.AddWithValue("p_description", resourceViewModel.Description ?? string.Empty);
+        cmd.Parameters.AddWithValue("p_quantity", resourceViewModel.Quantity);
 
         await cmd.ExecuteNonQueryAsync();
         return (true, "Resource created successfully.");
     }
 
-    public async Task<(bool Success, string Message)> UpdateResource(Resource resource)
+    public async Task<(bool Success, string Message)> UpdateResource(ResourceViewModel resourceViewModel)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand("CALL public.update_resource(@p_id, @p_name, @p_description, @p_quantity)", conn);
-        cmd.Parameters.AddWithValue("p_id", resource.Id);
-        cmd.Parameters.AddWithValue("p_name", resource.Name);
-        cmd.Parameters.AddWithValue("p_description", resource.Description ?? string.Empty);
-        cmd.Parameters.AddWithValue("p_quantity", resource.Quantity);
+        cmd.Parameters.AddWithValue("p_id", resourceViewModel.Id);
+        cmd.Parameters.AddWithValue("p_name", resourceViewModel.Name);
+        cmd.Parameters.AddWithValue("p_description", resourceViewModel.Description ?? string.Empty);
+        cmd.Parameters.AddWithValue("p_quantity", resourceViewModel.Quantity);
 
         await cmd.ExecuteNonQueryAsync();
         return (true, "Resource updated successfully.");
@@ -54,9 +54,9 @@ public class ResourceService : IResourceService
         return (true, "Resource deleted successfully.");
     }
 
-    public async Task<List<Resource>> GetAllResources()
+    public async Task<List<ResourceViewModel>> GetAllResources()
     {
-        var resources = new List<Resource>();
+        var resources = new List<ResourceViewModel>();
 
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -66,7 +66,7 @@ public class ResourceService : IResourceService
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            resources.Add(new Resource
+            resources.Add(new ResourceViewModel
             {
                 Id = reader.GetInt32(reader.GetOrdinal("id")),
                 Name = reader.GetString(reader.GetOrdinal("name")),
@@ -77,9 +77,9 @@ public class ResourceService : IResourceService
         return resources;
     }
     
-    public async Task<Resource?> GetResourceById(int id)
+    public async Task<ResourceViewModel?> GetResourceById(int id)
     {
-        Resource? resource = null;
+        ResourceViewModel? resource = null;
 
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -90,7 +90,7 @@ public class ResourceService : IResourceService
         await using var reader = await cmd.ExecuteReaderAsync();
         if (await reader.ReadAsync())
         {
-            resource = new Resource
+            resource = new ResourceViewModel
             {
                 Id = reader.GetInt32(reader.GetOrdinal("id")),
                 Name = reader.GetString(reader.GetOrdinal("name")),

@@ -19,15 +19,15 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] User user)
+    public async Task<IActionResult> CreateUser([FromBody] UserViewModel userViewModel)
     {
-        var (success, message) = await _userService.CreateUser(user);
+        var (success, message) = await _userService.CreateUser(userViewModel);
         if (success)
             return Ok(message);
         return BadRequest(message);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
     public async Task<IActionResult> GetUserById(int id)
     {
         var user = await _userService.GetUserById(id);
@@ -37,21 +37,22 @@ public class UserController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateUser([FromBody] User user)
+    public async Task<IActionResult> UpdateUser([FromBody] UserViewModel userViewModel)
     {
-        var (success, message) = await _userService.UpdateUser(user);
+        var (success, message) = await _userService.UpdateUser(userViewModel);
         if (success)
             return Ok(message);
         return BadRequest(message);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var result = await _userService.DeleteUser(id);
-        if (!result)
-            return NotFound($"User with ID {id} not found.");
-        return Ok("User deleted (soft delete).");
+        var (success, message) = await _userService.DeleteUser(id);
+
+        if(success)
+            return Ok(message);
+        return BadRequest(message);
     }
 
     [HttpGet]

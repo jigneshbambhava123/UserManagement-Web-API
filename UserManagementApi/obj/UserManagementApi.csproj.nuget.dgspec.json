@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\UserManagementApi.csproj": {}
+    "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementapi\\UserManagementApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\UserManagementApi.csproj": {
+    "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementapi\\UserManagementApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\UserManagementApi.csproj",
+        "projectUniqueName": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementapi\\UserManagementApi.csproj",
         "projectName": "UserManagementApi",
-        "projectPath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\UserManagementApi.csproj",
+        "projectPath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementapi\\UserManagementApi.csproj",
         "packagesPath": "C:\\Users\\pctr48\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\obj\\",
+        "outputPath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementapi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pctr48\\AppData\\Roaming\\NuGet\\NuGet.Config"

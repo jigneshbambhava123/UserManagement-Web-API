@@ -1,6 +1,6 @@
 namespace UserManagementApi.ViewModels;
 
-public class User
+public class UserViewModel
 {
     public int Id { get; set; }
     public string Firstname { get; set; } = string.Empty;
@@ -13,5 +13,4 @@ public class User
     public long PhoneNumber { get; set; }
     public bool IsActive { get; set; }
     public DateTime Dateofbirth { get; set; }  
-
 }

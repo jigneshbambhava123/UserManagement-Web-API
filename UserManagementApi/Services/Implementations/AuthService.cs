@@ -16,7 +16,7 @@ public class AuthService:IAuthService
         _configuration = configuration;
     }
 
-    public async Task<User?> AuthenticateUserAsync(string email, string password)
+    public async Task<UserViewModel?> AuthenticateUserAsync(string email, string password)
     {
         var user = await GetUserByEmailAsync(email);
 
@@ -60,7 +60,7 @@ public class AuthService:IAuthService
         return (true, token, userId, "A password reset link has been generated.");
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
+    public async Task<UserViewModel?> GetUserByEmailAsync(string email)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -73,11 +73,11 @@ public class AuthService:IAuthService
         if (!reader.HasRows)
             return null;
 
-        User? user = null;
+        UserViewModel? user = null;
 
         while (await reader.ReadAsync())
         {
-            user = new User
+            user = new UserViewModel
             {
                 Id = reader.GetInt32(reader.GetOrdinal("id")),
                 Firstname = reader.GetString(reader.GetOrdinal("firstname")),

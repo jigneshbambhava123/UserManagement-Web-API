@@ -1,6 +1,6 @@
 namespace UserManagementApi.ViewModels;
 
-public class Resource
+public class ResourceViewModel
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";

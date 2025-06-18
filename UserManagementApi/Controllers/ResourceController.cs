@@ -16,24 +16,24 @@ public class ResourceController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateResource([FromBody] Resource resource)
+    public async Task<IActionResult> CreateResource([FromBody] ResourceViewModel resourceViewModel)
     {
-        var (success, message) = await _resourceService.CreateResource(resource);
+        var (success, message) = await _resourceService.CreateResource(resourceViewModel);
         if (success)
             return Ok(message);
         return BadRequest(message);
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateResource([FromBody] Resource resource)
+    public async Task<IActionResult> UpdateResource([FromBody] ResourceViewModel resourceViewModel)
     {
-        var (success, message) = await _resourceService.UpdateResource(resource);
+        var (success, message) = await _resourceService.UpdateResource(resourceViewModel);
         if (success)
             return Ok(message);
         return BadRequest(message);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete]
     public async Task<IActionResult> DeleteResource(int id)
     {
         var (success, message) = await _resourceService.DeleteResource(id);
@@ -49,7 +49,7 @@ public class ResourceController : ControllerBase
         return Ok(resources);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
     public async Task<IActionResult> GetResourceById(int id)
     {
         var resource = await _resourceService.GetResourceById(id);
