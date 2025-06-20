@@ -18,7 +18,7 @@ public class UserService : IUserService
     public async Task<(bool Success, string Message)> CreateUser(UserViewModel userViewModel)
     {
         if (await EmailExists(userViewModel.Email))
-            return (false, "A user with this email already exists.");
+            return (false, "This email is linked to another user.");
 
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -52,7 +52,7 @@ public class UserService : IUserService
             return (false, $"User with ID {userViewModel.Id} not found.");
 
         if (await EmailExists(userViewModel.Email, userViewModel.Id))
-            return (false, "A user with this email already exists.");
+            return (false, "This email is linked to another user.");
 
         await using var cmd = new NpgsqlCommand("CALL public.update_user(@p_id, @p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_isactive)", conn);
         cmd.Parameters.AddWithValue("p_id", userViewModel.Id);

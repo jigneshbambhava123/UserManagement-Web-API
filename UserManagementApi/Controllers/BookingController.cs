@@ -5,7 +5,7 @@ using UserManagementApi.ViewModels;
 namespace UserManagementApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class BookingController : ControllerBase
 {
     private readonly IBookingService _bookingService;
@@ -24,21 +24,21 @@ public class BookingController : ControllerBase
         return BadRequest(message);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetBookingHistory([FromQuery] int? userId = null)
+    [HttpGet("ResourceHistory")]
+    public async Task<IActionResult> GetResourceHistory([FromQuery] int? id = null)
     {
-        var history = await _bookingService.GetBookingHistory(userId);
+        var history = await _bookingService.GetBookingHistory(id);
         return Ok(history);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetActiveBookings([FromQuery] int? userId = null)
+    [HttpGet("ActiveBookings")]
+    public async Task<IActionResult> GetActiveBookings([FromQuery] int? id = null)
     {
-        var activeBookings = await _bookingService.GetActiveBookings(userId);
+        var activeBookings = await _bookingService.GetActiveBookings(id);
         return Ok(activeBookings);
     }
 
-    [HttpPost]
+    [HttpPost("ReleaseExpiredBookings")]
     public async Task<IActionResult> ReleaseExpiredBookings()
     {
         var (success, message) = await _bookingService.ReleaseExpiredBookings();

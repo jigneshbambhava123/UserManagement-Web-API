@@ -10,10 +10,10 @@ using UserManagementApi.ViewModels;
 namespace UserManagementApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
-    private readonly IAuthService _authService; // your user auth service
+    private readonly IAuthService _authService; 
     private readonly IConfiguration _configuration;
     private readonly ITokenService _tokenService;
 
@@ -24,7 +24,7 @@ public class AccountController : ControllerBase
         _tokenService = tokenService;
     }
 
-    [HttpPost]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginViewModel loginModel)
     {
         if (!ModelState.IsValid)
@@ -54,7 +54,7 @@ public class AccountController : ControllerBase
         return Ok(new { token });
     }
 
-    [HttpPost]
+    [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword([FromQuery] string email, [FromQuery] string baseUrl)
     {
         var result = await _authService.ForgotPasswordAsync(email, baseUrl);
@@ -64,23 +64,23 @@ public class AccountController : ControllerBase
         return Ok(new { token = result.Token, userId = result.UserId, message = result.Message });
     }
 
-    [HttpGet]
+    [HttpGet]   
     public async Task<IActionResult> ValidateResetToken(int userId, string token)
     {
         var isValid = await _authService.ValidateResetTokenAsync(userId, token);
 
         if (!isValid)
-            return BadRequest("Invalid or expired token.");
+            return BadRequest("Token is invalid or expired. Please obtain a new token.");
 
         return Ok("Valid token");
     }
 
-    [HttpPost]
+    [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
     {
         var result = await _authService.ResetPasswordAsync(model.UserId, model.Token, model.NewPassword);
         
-        if (result == "User not found." || result == "Invalid or expired token.")
+        if (result == "The requested user could not be found." || result == "Token is invalid or expired. Please obtain a new token.")
             return BadRequest(result);
 
         return Ok(result);

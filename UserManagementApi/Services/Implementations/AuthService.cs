@@ -24,7 +24,6 @@ public class AuthService:IAuthService
         {
             return user;
         }
-
         return null;
     }
 
@@ -129,7 +128,7 @@ public class AuthService:IAuthService
 
         var reader = await cmd.ExecuteReaderAsync();
         if (!reader.HasRows)
-            return "User not found.";
+            return "The requested user could not be found.";
 
         await reader.ReadAsync();
 
@@ -137,7 +136,7 @@ public class AuthService:IAuthService
         var expiry = Convert.ToDateTime(reader["ResetTokenExpiry"]);
 
         if (storedToken != token || DateTime.UtcNow > expiry)
-            return "Invalid or expired token.";
+            return "Token is invalid or expired. Please obtain a new token.";
 
         reader.Close();
 

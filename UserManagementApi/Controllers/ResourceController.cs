@@ -5,7 +5,7 @@ using UserManagementApi.ViewModels;
 namespace UserManagementApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class ResourceController : ControllerBase
 {
     private readonly IResourceService _resourceService;
@@ -49,7 +49,7 @@ public class ResourceController : ControllerBase
         return Ok(resources);
     }
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetResourceById(int id)
     {
         var resource = await _resourceService.GetResourceById(id);

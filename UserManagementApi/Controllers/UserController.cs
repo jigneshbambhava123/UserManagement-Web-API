@@ -8,7 +8,7 @@ namespace UserManagementApi.Controllers;
 
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -27,7 +27,7 @@ public class UserController : ControllerBase
         return BadRequest(message);
     }
 
-    [HttpGet]
+    [HttpGet("{id}")] 
     public async Task<IActionResult> GetUserById(int id)
     {
         var user = await _userService.GetUserById(id);
