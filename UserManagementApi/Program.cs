@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using UserManagementApi.Helper;
 using UserManagementApi.Services.Implementations;
 using UserManagementApi.Services.Interfaces;
 
@@ -34,10 +35,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin", 
         corsBuilder => corsBuilder.WithOrigins("http://localhost:5272") 
                                   .AllowAnyHeader()
-                                  .AllowAnyMethod());
+                                  .AllowAnyMethod()
+                                  .AllowCredentials());
 });
 // --- END CORS CONFIGURATION ---
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -50,16 +53,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// --- CORS Middleware Usage ---
 app.UseRouting(); 
 app.UseCors("AllowSpecificOrigin"); 
+
+app.MapHub<ResourceHub>("/resourceHub");
 
 app.UseAuthentication();
 app.UseHttpsRedirection();

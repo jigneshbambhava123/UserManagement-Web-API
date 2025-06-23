@@ -1,5 +1,7 @@
 using System.Data;
+using Microsoft.AspNetCore.SignalR;
 using Npgsql;
+using UserManagementApi.Helper;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
 
@@ -8,10 +10,14 @@ namespace UserManagementApi.Services.Implementations;
 public class BookingService : IBookingService
 {
     private readonly IConfiguration _configuration;
+    private readonly IHubContext<ResourceHub> _hubContext;
+    private readonly IResourceService _resourceService; 
 
-    public BookingService(IConfiguration configuration)
+    public BookingService(IConfiguration configuration,IHubContext<ResourceHub> hubContext, IResourceService resourceService)
     {
         _configuration = configuration;
+        _hubContext = hubContext;
+        _resourceService = resourceService;
     }
 
     public async Task<(bool Success, string Message)> CreateBooking(BookingViewModel booking)
@@ -44,8 +50,12 @@ public class BookingService : IBookingService
 
         await cmd.ExecuteNonQueryAsync();
 
+        var resource = await _resourceService.GetResourceById(booking.ResourceId);
+        int newAvailableQty = resource.Quantity - (resource.UsedQuantity ?? 0);
+        await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
+
         return ((bool)vSuccess.Value, vMessage.Value?.ToString() ?? "");
-    }
+    }   
 
     public async Task<List<BookingViewModel>> GetBookingHistory(int? userId = null)
     {

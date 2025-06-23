@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uh4O41WUC/o=",
+  "dgSpecHash": "mmWq2b+lebY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\usermanagementapi\\UserManagementApi.csproj",
+  "projectFilePath": "C:\\Users\\pctr48\\Downloads\\New folder (5)\\UserManagement\\UserManagementApi\\UserManagementApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\pctr48\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.5\\microsoft.aspnetcore.authentication.jwtbearer.8.0.5.nupkg.sha512",
     "C:\\Users\\pctr48\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.7\\microsoft.aspnetcore.openapi.8.0.7.nupkg.sha512",

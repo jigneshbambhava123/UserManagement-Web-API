@@ -96,7 +96,8 @@ public class ResourceService : IResourceService
                 Id = reader.GetInt32(reader.GetOrdinal("id")),
                 Name = reader.GetString(reader.GetOrdinal("name")),
                 Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
-                Quantity = reader.GetInt32(reader.GetOrdinal("quantity"))
+                Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
+                UsedQuantity = reader.GetInt32(reader.GetOrdinal("usedquantity")) 
             };
         }
         return resource;
