@@ -18,6 +18,7 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] UserViewModel userViewModel)
     {
@@ -27,6 +28,7 @@ public class UserController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("{id}")] 
     public async Task<IActionResult> GetUserById(int id)
     {
@@ -36,6 +38,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserViewModel userViewModel)
     {
@@ -45,6 +48,7 @@ public class UserController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -55,6 +59,7 @@ public class UserController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
@@ -15,6 +16,7 @@ public class BookingController : ControllerBase
         _bookingService = bookingService;
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpPost]
     public async Task<IActionResult> CreateBooking([FromBody] BookingViewModel booking)
     {
@@ -24,6 +26,7 @@ public class BookingController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("ResourceHistory")]
     public async Task<IActionResult> GetResourceHistory([FromQuery] int? id = null)
     {
@@ -31,6 +34,7 @@ public class BookingController : ControllerBase
         return Ok(history);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("ActiveBookings")]
     public async Task<IActionResult> GetActiveBookings([FromQuery] int? id = null)
     {
@@ -38,6 +42,7 @@ public class BookingController : ControllerBase
         return Ok(activeBookings);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpPost("ReleaseExpiredBookings")]
     public async Task<IActionResult> ReleaseExpiredBookings()
     {

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
@@ -15,6 +16,7 @@ public class ResourceController : ControllerBase
         _resourceService = resourceService;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> CreateResource([FromBody] ResourceViewModel resourceViewModel)
     {
@@ -24,6 +26,7 @@ public class ResourceController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> UpdateResource([FromBody] ResourceViewModel resourceViewModel)
     {
@@ -33,6 +36,7 @@ public class ResourceController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete]
     public async Task<IActionResult> DeleteResource(int id)
     {
@@ -42,6 +46,7 @@ public class ResourceController : ControllerBase
         return BadRequest(message);
     }
 
+    [Authorize(Roles = "Admin,User")]
     [HttpGet]
     public async Task<IActionResult> GetResources()
     {
@@ -49,6 +54,7 @@ public class ResourceController : ControllerBase
         return Ok(resources);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetResourceById(int id)
     {
