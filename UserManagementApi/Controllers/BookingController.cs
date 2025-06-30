@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
+using UserManagementApi.Filters; 
 
 namespace UserManagementApi.Controllers;
 
@@ -20,10 +21,8 @@ public class BookingController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateBooking([FromBody] BookingViewModel booking)
     {
-        var (success, message) = await _bookingService.CreateBooking(booking);
-        if (success)
-            return Ok(message);
-        return BadRequest(message);
+        await _bookingService.CreateBooking(booking);
+        return Ok("Booking created successfully.");
     }
 
     [Authorize(Roles = "Admin,User")]
@@ -42,13 +41,10 @@ public class BookingController : ControllerBase
         return Ok(activeBookings);
     }
 
-    [Authorize(Roles = "Admin,User")]
     [HttpPost("ReleaseExpiredBookings")]
     public async Task<IActionResult> ReleaseExpiredBookings()
     {
-        var (success, message) = await _bookingService.ReleaseExpiredBookings();
-        if (success)
-            return Ok(message);
-        return BadRequest(message);
+        await _bookingService.ReleaseExpiredBookings();
+        return Ok("Expired bookings released successfully.");
     }
 }

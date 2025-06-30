@@ -16,12 +16,14 @@ public class AccountController : ControllerBase
     private readonly IAuthService _authService; 
     private readonly IConfiguration _configuration;
     private readonly ITokenService _tokenService;
+    private readonly IUserService _userService;
 
-    public AccountController(IAuthService authService, IConfiguration configuration, ITokenService tokenService)
+    public AccountController(IAuthService authService, IConfiguration configuration, ITokenService tokenService,IUserService userService)
     {
         _authService = authService;
         _configuration = configuration;
         _tokenService = tokenService;
+        _userService = userService;
     }
 
     [HttpPost("Login")]
@@ -84,5 +86,12 @@ public class AccountController : ControllerBase
             return BadRequest(result);
 
         return Ok(result);
+    }
+
+    [HttpPost("Register")]
+    public async Task<IActionResult> Register([FromBody] UserViewModel userViewModel)
+    {
+        await _userService.CreateUser(userViewModel);
+        return Ok("User created successfully.");
     }
 }

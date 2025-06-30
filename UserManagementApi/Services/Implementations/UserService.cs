@@ -2,12 +2,12 @@ using Npgsql;
 using UserManagementApi.Helper;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
+using UserManagementApi.Exceptions; 
 
 namespace UserManagementApi.Services.Implementations;
 
 public class UserService : IUserService
 {
-
     private readonly IConfiguration _configuration;
 
     public UserService(IConfiguration configuration)
@@ -15,16 +15,18 @@ public class UserService : IUserService
         _configuration = configuration;
     }
 
-    public async Task<(bool Success, string Message)> CreateUser(UserViewModel userViewModel)
+    public async Task CreateUser(UserViewModel userViewModel)
     {
         if (await EmailExists(userViewModel.Email))
-            return (false, "This email is linked to another user.");
+        {   
+            throw new ValidationException("This email is linked to another user."); 
+        }
 
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_passwordhash, @p_dateofbirth::date)", conn);
-        
+
         cmd.Parameters.AddWithValue("p_firstname", userViewModel.Firstname);
         cmd.Parameters.AddWithValue("p_lastname", userViewModel.Lastname);
         cmd.Parameters.AddWithValue("p_email", userViewModel.Email);
@@ -32,15 +34,12 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_roleid", userViewModel.RoleId);
         cmd.Parameters.AddWithValue("p_phonenumber", userViewModel.PhoneNumber);
         cmd.Parameters.AddWithValue("p_passwordhash", PasswordHasher.HashPassword(userViewModel.Password));
-        cmd.Parameters.AddWithValue("p_dateofbirth", userViewModel.Dateofbirth.Date); 
+        cmd.Parameters.AddWithValue("p_dateofbirth", userViewModel.Dateofbirth.Date);
 
         await cmd.ExecuteNonQueryAsync();
-        return (true, "User created successfully.");
     }
 
-
-
-    public async Task<(bool Success, string Message)> UpdateUser(UserViewModel userViewModel)
+    public async Task UpdateUser(UserViewModel userViewModel)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -49,10 +48,14 @@ public class UserService : IUserService
         existsCmd.Parameters.AddWithValue("id", userViewModel.Id);
         var exists = await existsCmd.ExecuteScalarAsync() != null;
         if (!exists)
-            return (false, $"User with ID {userViewModel.Id} not found.");
+        {
+            throw new NotFoundException($"User with ID {userViewModel.Id} not found.");
+        }
 
         if (await EmailExists(userViewModel.Email, userViewModel.Id))
-            return (false, "This email is linked to another user.");
+        {
+            throw new ValidationException("This email is linked to another user."); 
+        }
 
         await using var cmd = new NpgsqlCommand("CALL public.update_user(@p_id, @p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_isactive)", conn);
         cmd.Parameters.AddWithValue("p_id", userViewModel.Id);
@@ -65,22 +68,25 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_isactive", userViewModel.IsActive);
 
         await cmd.ExecuteNonQueryAsync();
-        return (true, "User updated successfully.");
     }
 
-    public async Task<(bool Success, string Message)> DeleteUser(int id)
+    public async Task DeleteUser(int id) 
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
-        // Proceed to delete
+        var existsCmd = new NpgsqlCommand("SELECT 1 FROM public.users WHERE id=@id AND \"Isdeleted\"=false", conn);
+        existsCmd.Parameters.AddWithValue("id", id);
+        if (await existsCmd.ExecuteScalarAsync() == null)
+        {
+            throw new NotFoundException($"User with ID {id} not found for deletion.");
+        }
+
         await using var cmd = new NpgsqlCommand("CALL public.delete_user(@p_id)", conn);
         cmd.Parameters.AddWithValue("p_id", id);
 
         await cmd.ExecuteNonQueryAsync();
-        return (true, "User deleted successfully.");
     }
-
 
     public async Task<IEnumerable<UserViewModel>> GetUsers()
     {
@@ -104,7 +110,7 @@ public class UserService : IUserService
                 RoleId = reader.GetInt32(5),
                 PhoneNumber = reader.GetInt64(6),
                 IsActive = reader.GetBoolean(7),
-                Dateofbirth = reader.GetDateTime(8) 
+                Dateofbirth = reader.GetDateTime(8)
             });
         }
         return users;
@@ -151,7 +157,6 @@ public class UserService : IUserService
                 IsActive = reader.GetBoolean(7)
             };
         }
-        return null;
+        throw new NotFoundException($"User with ID {id} not found.");
     }
-
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
+using UserManagementApi.Filters; 
 
 namespace UserManagementApi.Controllers;
 
@@ -20,30 +21,32 @@ public class ResourceController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateResource([FromBody] ResourceViewModel resourceViewModel)
     {
-        var (success, message) = await _resourceService.CreateResource(resourceViewModel);
-        if (success)
-            return Ok(message);
-        return BadRequest(message);
+        await _resourceService.CreateResource(resourceViewModel);
+        return Ok("Resource created successfully.");
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> UpdateResource([FromBody] ResourceViewModel resourceViewModel)
     {
-        var (success, message) = await _resourceService.UpdateResource(resourceViewModel);
-        if (success)
-            return Ok(message);
-        return BadRequest(message);
+        await _resourceService.UpdateResource(resourceViewModel);
+        return Ok("Resource updated successfully.");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPatch]
+    public async Task<IActionResult> UpdateField(int id, [FromBody] Dictionary<string, string> updateData)
+    {
+        await _resourceService.UpdateSingleField(id, updateData);
+        return Ok("Resource field updated successfully."); 
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete]
     public async Task<IActionResult> DeleteResource(int id)
     {
-        var (success, message) = await _resourceService.DeleteResource(id);
-        if (success)
-            return Ok(message);
-        return BadRequest(message);
+        await _resourceService.DeleteResource(id);
+        return Ok("Resource deleted successfully.");
     }
 
     [Authorize(Roles = "Admin,User")]
@@ -59,8 +62,6 @@ public class ResourceController : ControllerBase
     public async Task<IActionResult> GetResourceById(int id)
     {
         var resource = await _resourceService.GetResourceById(id);
-        if (resource == null)
-            return NotFound("Resource not found.");
         return Ok(resource);
     }
 }

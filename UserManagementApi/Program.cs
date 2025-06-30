@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using UserManagementApi.Helper;
 using UserManagementApi.Services.Implementations;
 using UserManagementApi.Services.Interfaces;
-
+using UserManagementApi.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +43,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -95,7 +99,7 @@ app.MapHub<ResourceHub>("/resourceHub");
 app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
+    
 app.MapControllers();
 
 app.Run();

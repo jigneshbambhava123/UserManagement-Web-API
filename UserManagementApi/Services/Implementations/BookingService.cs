@@ -4,6 +4,7 @@ using Npgsql;
 using UserManagementApi.Helper;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
+using UserManagementApi.Exceptions; 
 
 namespace UserManagementApi.Services.Implementations;
 
@@ -13,21 +14,34 @@ public class BookingService : IBookingService
     private readonly IHubContext<ResourceHub> _hubContext;
     private readonly IResourceService _resourceService; 
 
-    public BookingService(IConfiguration configuration,IHubContext<ResourceHub> hubContext, IResourceService resourceService)
+    public BookingService(IConfiguration configuration, IHubContext<ResourceHub> hubContext, IResourceService resourceService)
     {
         _configuration = configuration;
         _hubContext = hubContext;
         _resourceService = resourceService;
     }
 
-    public async Task<(bool Success, string Message)> CreateBooking(BookingViewModel booking)
+    public async Task CreateBooking(BookingViewModel booking)
     {
+        if (booking.FromDate.Date < DateTime.Today.Date)
+        {
+            throw new ValidationException("Booking from date cannot be in the past.");
+        }
+        if (booking.ToDate.Date < booking.FromDate.Date)
+        {
+            throw new ValidationException("Booking to date cannot be before from date.");
+        }
+        if (booking.Quantity <= 0)
+        {
+            throw new ValidationException("Booking quantity must be positive.");
+        }
+
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand("create_booking", conn)
         {
-            CommandType = CommandType.StoredProcedure 
+            CommandType = CommandType.StoredProcedure
         };
 
         cmd.Parameters.AddWithValue("p_resourceid", booking.ResourceId);
@@ -50,12 +64,27 @@ public class BookingService : IBookingService
 
         await cmd.ExecuteNonQueryAsync();
 
-        var resource = await _resourceService.GetResourceById(booking.ResourceId);
-        int newAvailableQty = resource.Quantity - (resource.UsedQuantity ?? 0);
-        await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
+        bool success = (bool)vSuccess.Value;
+        string message = vMessage.Value?.ToString() ?? "Unknown error occurred.";
 
-        return ((bool)vSuccess.Value, vMessage.Value?.ToString() ?? "");
-    }   
+        if (!success)
+        {
+            throw new ValidationException(message);
+        }
+
+        ResourceViewModel? resource = null;
+        try
+        {
+            resource = await _resourceService.GetResourceById(booking.ResourceId);
+        }
+        catch (NotFoundException) 
+        {
+            throw new ValidationException($"Resource with ID {booking.ResourceId} not found.");
+        }
+
+        int newAvailableQty = resource.Quantity - (resource.UsedQuantity ?? 0); 
+        await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
+    }
 
     public async Task<List<BookingViewModel>> GetBookingHistory(int? userId = null)
     {
@@ -109,15 +138,12 @@ public class BookingService : IBookingService
         return bookings;
     }
 
-    public async Task<(bool Success, string Message)> ReleaseExpiredBookings()
+    public async Task ReleaseExpiredBookings()
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand("CALL public.release_expired_bookings()", conn);
         await cmd.ExecuteNonQueryAsync();
-
-        return (true, "Expired bookings released successfully.");
     }
-
 }
