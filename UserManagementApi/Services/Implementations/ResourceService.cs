@@ -1,9 +1,7 @@
-// In UserManagementApi.Services.Implementations/ResourceService.cs
-
 using Npgsql;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
-using UserManagementApi.Exceptions; // Add this using   directive
+using UserManagementApi.Exceptions; 
 
 namespace UserManagementApi.Services.Implementations;
 
@@ -72,7 +70,6 @@ public class ResourceService : IResourceService
         {
             throw new NotFoundException($"Resource with ID {id} not found.");
         }
-
 
         string procedureName = field.ToLower() switch
         {

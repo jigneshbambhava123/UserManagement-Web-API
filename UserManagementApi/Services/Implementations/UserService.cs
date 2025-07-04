@@ -2,17 +2,21 @@ using Npgsql;
 using UserManagementApi.Helper;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
-using UserManagementApi.Exceptions; 
+using UserManagementApi.Exceptions;
+using Microsoft.AspNetCore.SignalR;
+
 
 namespace UserManagementApi.Services.Implementations;
 
 public class UserService : IUserService
 {
     private readonly IConfiguration _configuration;
+    private readonly IHubContext<ResourceHub> _hubContext;
 
-    public UserService(IConfiguration configuration)
+    public UserService(IConfiguration configuration, IHubContext<ResourceHub> hubContext)
     {
         _configuration = configuration;
+        _hubContext = hubContext;
     }
 
     public async Task CreateUser(UserViewModel userViewModel)
@@ -37,6 +41,12 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_dateofbirth", userViewModel.Dateofbirth.Date);
 
         await cmd.ExecuteNonQueryAsync();
+
+        var countCmd = new NpgsqlCommand("SELECT COUNT(*) FROM public.users WHERE \"Isdeleted\"=false", conn);
+        var countResult = await countCmd.ExecuteScalarAsync();
+        int activeUserCount = countResult != null ? Convert.ToInt32(countResult) : 0;
+
+        await _hubContext.Clients.All.SendAsync("ReceiveUserCountUpdate", activeUserCount);
     }
 
     public async Task UpdateUser(UserViewModel userViewModel)
@@ -86,6 +96,12 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_id", id);
 
         await cmd.ExecuteNonQueryAsync();
+
+        var countCmd = new NpgsqlCommand("SELECT COUNT(*) FROM public.users WHERE \"Isdeleted\"=false", conn);
+        var countResult = await countCmd.ExecuteScalarAsync();
+        int activeUserCount = countResult != null ? Convert.ToInt32(countResult) : 0;
+
+        await _hubContext.Clients.All.SendAsync("ReceiveUserCountUpdate", activeUserCount);
     }
 
     public async Task<IEnumerable<UserViewModel>> GetUsers()

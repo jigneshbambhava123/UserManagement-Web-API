@@ -1,5 +1,3 @@
-// In your UserManagementApi project's Program.cs
-
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

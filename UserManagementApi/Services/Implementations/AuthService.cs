@@ -1,4 +1,5 @@
 using Npgsql;
+using UserManagementApi.Exceptions;
 using UserManagementApi.Helper;
 using UserManagementApi.Services.Interfaces;
 using UserManagementApi.ViewModels;
@@ -38,7 +39,7 @@ public class AuthService:IAuthService
         var reader = await cmd.ExecuteReaderAsync();
 
         if (!reader.HasRows)
-            return (false, null,0, "Email not found");
+            throw new NotFoundException("User with the given email does not exist.");
 
         await reader.ReadAsync();
         var userId = reader.GetInt32(0);
@@ -128,7 +129,7 @@ public class AuthService:IAuthService
 
         var reader = await cmd.ExecuteReaderAsync();
         if (!reader.HasRows)
-            return "The requested user could not be found.";
+            throw new NotFoundException("The requested user could not be found.");
 
         await reader.ReadAsync();
 
@@ -136,7 +137,7 @@ public class AuthService:IAuthService
         var expiry = Convert.ToDateTime(reader["ResetTokenExpiry"]);
 
         if (storedToken != token || DateTime.UtcNow > expiry)
-            return "Token is invalid or expired. Please obtain a new token.";
+            throw new ValidationException("Token is invalid or expired. Please request a new one.");
 
         reader.Close();
 

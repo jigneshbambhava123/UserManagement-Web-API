@@ -60,9 +60,6 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ForgotPassword([FromQuery] string email, [FromQuery] string baseUrl)
     {
         var result = await _authService.ForgotPasswordAsync(email, baseUrl);
-        if (!result.Success)
-            return Ok(new { token = "", userId = 0, message = result.Message });
-
         return Ok(new { token = result.Token, userId = result.UserId, message = result.Message });
     }
 
@@ -81,17 +78,14 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
     {
         var result = await _authService.ResetPasswordAsync(model.UserId, model.Token, model.NewPassword);
-        
-        if (result == "The requested user could not be found." || result == "Token is invalid or expired. Please obtain a new token.")
-            return BadRequest(result);
-
         return Ok(result);
     }
+
 
     [HttpPost("Register")]
     public async Task<IActionResult> Register([FromBody] UserViewModel userViewModel)
     {
         await _userService.CreateUser(userViewModel);
-        return Ok("User created successfully.");
+        return Ok("User Register successfully.");
     }
 }
