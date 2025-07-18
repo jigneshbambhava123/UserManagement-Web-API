@@ -32,7 +32,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", 
-        corsBuilder => corsBuilder.WithOrigins("http://localhost:5272") 
+        corsBuilder => corsBuilder.WithOrigins("http://localhost:5272", "http://localhost:5173") 
                                   .AllowAnyHeader()
                                   .AllowAnyMethod()
                                   .AllowCredentials());
@@ -50,6 +50,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

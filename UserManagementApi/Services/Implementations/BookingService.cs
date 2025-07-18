@@ -86,16 +86,86 @@ public class BookingService : IBookingService
         await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
     }
 
-    public async Task<List<BookingViewModel>> GetBookingHistory(int? userId = null)
+     public async Task<(List<BookingViewModel> Bookings, int TotalCount)> GetBookingHistoryFilteredAsync(
+    int? userId = null,
+    string? search = null,
+    string? sortColumn = "todate",
+    string? sortDirection = "desc",
+    int pageNumber = 1,
+    int pageSize = 10,
+    string? timeFilter = null
+)
+{
+    var bookings = new List<BookingViewModel>();
+    int totalCount = 0;
+
+    await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+    await conn.OpenAsync();
+
+    var query = "SELECT * FROM public.get_resource_booking_history_filtered(@p_userid, @p_search, @p_sort_column, @p_sort_direction, @p_page_number, @p_page_size, @p_timefilter)";
+    await using var cmd = new NpgsqlCommand(query, conn);
+
+    cmd.Parameters.AddWithValue("p_userid", (object?)userId ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("p_search", (object?)search ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("p_sort_column", (object?)sortColumn ?? "todate");
+    cmd.Parameters.AddWithValue("p_sort_direction", (object?)sortDirection ?? "desc");
+    cmd.Parameters.AddWithValue("p_page_number", pageNumber);
+    cmd.Parameters.AddWithValue("p_page_size", pageSize);
+    cmd.Parameters.AddWithValue("p_timefilter", (object?)timeFilter ?? DBNull.Value);
+
+    await using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        var booking = new BookingViewModel
+        {
+            Id = reader.GetInt32(reader.GetOrdinal("id")),
+            UserId = reader.GetInt32(reader.GetOrdinal("userid")),
+            ResourceId = reader.GetInt32(reader.GetOrdinal("resourceid")),
+            ResourceName = reader.IsDBNull(reader.GetOrdinal("resourcename")) ? null : reader.GetString(reader.GetOrdinal("resourcename")),
+            Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
+            FromDate = reader.GetDateTime(reader.GetOrdinal("fromdate")),
+            ToDate = reader.GetDateTime(reader.GetOrdinal("todate"))
+        };
+
+        // Assuming totalcount is returned as bigint from your SP
+        totalCount = (int)reader.GetInt64(reader.GetOrdinal("totalcount"));
+
+        bookings.Add(booking);
+    }
+
+    return (bookings, totalCount);
+}
+
+
+
+    public async Task<(List<BookingViewModel> Bookings, int TotalCount)> GetActiveBookingsFilteredAsync(
+        int? userId = null,
+        string? search = null,
+        string? sortColumn = "todate",
+        string? sortDirection = "desc",
+        int pageNumber = 1,
+        int pageSize = 10,
+        string? timeFilter = null
+    )
     {
         var bookings = new List<BookingViewModel>();
+        int totalCount = 0;
+
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
-        await using var cmd = new NpgsqlCommand("SELECT * FROM public.get_resource_booking_history(@p_userid)", conn);
+        await using var cmd = new NpgsqlCommand("SELECT * FROM public.get_active_resource_bookings_filtered(@p_userid, @p_search, @p_sort_column, @p_sort_direction, @p_page_number, @p_page_size, @p_timefilter)", conn);
+
         cmd.Parameters.AddWithValue("p_userid", (object?)userId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("p_search", (object?)search ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("p_sort_column", (object?)sortColumn ?? "todate");
+        cmd.Parameters.AddWithValue("p_sort_direction", (object?)sortDirection ?? "desc");
+        cmd.Parameters.AddWithValue("p_page_number", pageNumber);
+        cmd.Parameters.AddWithValue("p_page_size", pageSize);
+        cmd.Parameters.AddWithValue("p_timefilter", (object?)timeFilter ?? DBNull.Value);
 
         await using var reader = await cmd.ExecuteReaderAsync();
+
         while (await reader.ReadAsync())
         {
             bookings.Add(new BookingViewModel
@@ -108,35 +178,17 @@ public class BookingService : IBookingService
                 FromDate = reader.GetDateTime(reader.GetOrdinal("fromdate")),
                 ToDate = reader.GetDateTime(reader.GetOrdinal("todate"))
             });
-        }
-        return bookings;
-    }
 
-    public async Task<List<BookingViewModel>> GetActiveBookings(int? userId = null)
-    {
-        var bookings = new List<BookingViewModel>();
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await conn.OpenAsync();
-
-        await using var cmd = new NpgsqlCommand("SELECT * FROM public.get_active_resource_bookings(@p_userid)", conn);
-        cmd.Parameters.AddWithValue("p_userid", (object?)userId ?? DBNull.Value);
-
-        await using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            bookings.Add(new BookingViewModel
+            if (reader.GetOrdinal("totalcount") >= 0 && !reader.IsDBNull(reader.GetOrdinal("totalcount")))
             {
-                Id = reader.GetInt32(reader.GetOrdinal("id")),
-                UserId = reader.GetInt32(reader.GetOrdinal("userid")),
-                ResourceId = reader.GetInt32(reader.GetOrdinal("resourceid")),
-                ResourceName = reader.IsDBNull(reader.GetOrdinal("resourcename")) ? null : reader.GetString(reader.GetOrdinal("resourcename")),
-                Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
-                FromDate = reader.GetDateTime(reader.GetOrdinal("fromdate")),
-                ToDate = reader.GetDateTime(reader.GetOrdinal("todate"))
-            });
+                totalCount = reader.GetInt32(reader.GetOrdinal("totalcount"));
+            }
         }
-        return bookings;
+
+        return (bookings, totalCount);
     }
+
+
 
     public async Task ReleaseExpiredBookings()
     {

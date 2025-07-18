@@ -7,7 +7,7 @@ public interface IUserService
     Task CreateUser(UserViewModel userViewModel);
     Task UpdateUser(UserViewModel userViewModel);
     Task DeleteUser(int id);
-    Task<IEnumerable<UserViewModel>> GetUsers();
+    Task<(List<UserViewModel>, int)> GetUsers(string? search, string? sortColumn, string? sortDirection, int pageNumber, int pageSize);
     Task<UserViewModel?> GetUserById(int id);
     Task<bool> EmailExists(string email, int? excludeUserId = null);
 }

@@ -52,9 +52,24 @@ public class UserController : ControllerBase
 
     [Authorize(Roles = "Admin,User")]
     [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    public async Task<IActionResult> GetUsers(
+        [FromQuery] string? search,
+        [FromQuery] string? sortColumn,
+        [FromQuery] string? sortDirection,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var users = await _userService.GetUsers();
-        return Ok(users);
+        var validSortColumns = new List<string> { "firstname", "lastname", "email", "roleid", "phonenumber" };
+        sortColumn = validSortColumns.Contains(sortColumn?.ToLower() ?? "") ? sortColumn : "firstname";
+        sortDirection = sortDirection?.ToLower() == "desc" ? "desc" : "asc";
+
+        var (users, totalCount) = await _userService.GetUsers(search, sortColumn, sortDirection, pageNumber, pageSize);
+
+        return Ok(new
+        {
+            data = users,
+            totalCount = totalCount
+        });
     }
+
 }

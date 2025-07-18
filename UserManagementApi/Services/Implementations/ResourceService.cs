@@ -151,6 +151,47 @@ public class ResourceService : IResourceService
         return resources;
     }
 
+    public async Task<(List<ResourceViewModel>, int)> GetAllResourcesFilteredAsync(
+        string? search,
+        string? sortColumn,
+        string? sortDirection,
+        int pageNumber,
+        int pageSize)
+    {
+        var resources = new List<ResourceViewModel>();
+        int totalCount = 0;
+
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var query = "SELECT * FROM public.get_all_resources_filtered(@search, @sortColumn, @sortDirection, @pageNumber, @pageSize)";
+        await using var cmd = new NpgsqlCommand(query, conn);
+
+        cmd.Parameters.AddWithValue("@search", search ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@sortColumn", sortColumn ?? "name");
+        cmd.Parameters.AddWithValue("@sortDirection", sortDirection ?? "asc");
+        cmd.Parameters.AddWithValue("@pageNumber", pageNumber);
+        cmd.Parameters.AddWithValue("@pageSize", pageSize);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var resource = new ResourceViewModel
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("id")),
+                Name = reader.GetString(reader.GetOrdinal("name")),
+                Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+                Quantity = reader.GetInt32(reader.GetOrdinal("quantity")),
+                UsedQuantity = reader.GetInt32(reader.GetOrdinal("usedquantity"))
+            };
+
+            totalCount = (int)reader.GetInt64(reader.GetOrdinal("totalcount")); 
+            resources.Add(resource);
+        }
+
+        return (resources, totalCount);
+    }
+
     public async Task<ResourceViewModel> GetResourceById(int id)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));

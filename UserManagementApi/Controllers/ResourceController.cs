@@ -50,11 +50,30 @@ public class ResourceController : ControllerBase
     }
 
     [Authorize(Roles = "Admin,User")]
-    [HttpGet]
+    [HttpGet("allresource")]
     public async Task<IActionResult> GetResources()
     {
         var resources = await _resourceService.GetAllResources();
         return Ok(resources);
+    }
+
+    // [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> GetResourcesFiltered(
+        [FromQuery] string? search,
+        [FromQuery] string? sortColumn,
+        [FromQuery] string? sortDirection,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var (resources, totalCount) = await _resourceService.GetAllResourcesFilteredAsync(
+            search, sortColumn, sortDirection, pageNumber, pageSize);
+
+        return Ok(new
+        {
+            data = resources,
+            totalCount = totalCount
+        });
     }
 
     [Authorize(Roles = "Admin")]

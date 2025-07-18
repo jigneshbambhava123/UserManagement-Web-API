@@ -25,20 +25,48 @@ public class BookingController : ControllerBase
         return Ok("Booking created successfully.");
     }
 
-    [Authorize(Roles = "Admin,User")]
+    // [Authorize(Roles = "Admin,User")]
     [HttpGet("ResourceHistory")]
-    public async Task<IActionResult> GetResourceHistory([FromQuery] int? id = null)
+    public async Task<IActionResult> GetResourceHistory(
+        [FromQuery] int? userId = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? sortColumn = null,
+        [FromQuery] string? sortDirection = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? timeFilter = null // ✅ Added
+    )
     {
-        var history = await _bookingService.GetBookingHistory(id);
-        return Ok(history);
+        var (bookings, totalCount) = await _bookingService.GetBookingHistoryFilteredAsync(
+            userId, search, sortColumn, sortDirection, pageNumber, pageSize, timeFilter);
+
+        return Ok(new
+        {
+            data = bookings,
+            totalCount = totalCount
+        });
     }
 
-    [Authorize(Roles = "Admin,User")]
+
+    // [Authorize(Roles = "Admin,User")]
     [HttpGet("ActiveBookings")]
-    public async Task<IActionResult> GetActiveBookings([FromQuery] int? id = null)
+    public async Task<IActionResult> GetActiveBookings(
+        [FromQuery] int? userId = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? sortColumn = "todate",
+        [FromQuery] string? sortDirection = "desc",
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? timeFilter = null)
     {
-        var activeBookings = await _bookingService.GetActiveBookings(id);
-        return Ok(activeBookings);
+        var (bookings, totalCount) = await _bookingService.GetActiveBookingsFilteredAsync(
+            userId, search, sortColumn, sortDirection, pageNumber, pageSize, timeFilter);
+
+        return Ok(new
+        {
+            data = bookings,
+            totalCount = totalCount
+        });
     }
 
     [HttpPost("ReleaseExpiredBookings")]

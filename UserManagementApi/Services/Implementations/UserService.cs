@@ -104,19 +104,27 @@ public class UserService : IUserService
         await _hubContext.Clients.All.SendAsync("ReceiveUserCountUpdate", activeUserCount);
     }
 
-    public async Task<IEnumerable<UserViewModel>> GetUsers()
+    public async Task<(List<UserViewModel>, int)> GetUsers(string? search, string? sortColumn, string? sortDirection, int pageNumber, int pageSize)
     {
         var users = new List<UserViewModel>();
+        int totalCount = 0;
+
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
 
-        var query = "SELECT * FROM public.get_all_users()";
+        var query = "SELECT * FROM public.get_all_users_filtered(@search, @sortColumn, @sortDirection, @pageNumber, @pageSize)";
         await using var cmd = new NpgsqlCommand(query, conn);
+
+        cmd.Parameters.AddWithValue("@search", search ?? (object)DBNull.Value);
+        cmd.Parameters.AddWithValue("@sortColumn", sortColumn ?? "firstname");
+        cmd.Parameters.AddWithValue("@sortDirection", sortDirection ?? "asc");
+        cmd.Parameters.AddWithValue("@pageNumber", pageNumber);
+        cmd.Parameters.AddWithValue("@pageSize", pageSize);
 
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            users.Add(new UserViewModel
+            var user = new UserViewModel
             {
                 Id = reader.GetInt32(0),
                 Firstname = reader.GetString(1),
@@ -126,11 +134,17 @@ public class UserService : IUserService
                 RoleId = reader.GetInt32(5),
                 PhoneNumber = reader.GetInt64(6),
                 IsActive = reader.GetBoolean(7),
-                Dateofbirth = reader.GetDateTime(8)
-            });
+                Dateofbirth = reader.GetDateTime(8),
+                RoleName = reader.IsDBNull(9) ? string.Empty : reader.GetString(9)
+            };
+
+            totalCount = reader.GetInt32(10); 
+            users.Add(user);
         }
-        return users;
+
+        return (users, totalCount);
     }
+
 
     public async Task<bool> EmailExists(string email, int? excludeUserId = null)
     {
