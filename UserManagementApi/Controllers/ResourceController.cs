@@ -57,7 +57,7 @@ public class ResourceController : ControllerBase
         return Ok(resources);
     }
 
-    // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetResourcesFiltered(
         [FromQuery] string? search,

@@ -21,72 +21,72 @@ public class BookingService : IBookingService
         _resourceService = resourceService;
     }
 
-    public async Task CreateBooking(BookingViewModel booking)
-    {
-        if (booking.FromDate.Date < DateTime.Today.Date)
+        public async Task CreateBooking(BookingViewModel booking)
         {
-            throw new ValidationException("Booking from date cannot be in the past.");
+            if (booking.FromDate.Date < DateTime.Today.Date)
+            {
+                throw new ValidationException("Booking from date cannot be in the past.");
+            }
+            if (booking.ToDate.Date < booking.FromDate.Date)
+            {
+                throw new ValidationException("Booking to date cannot be before from date.");
+            }
+            if (booking.Quantity <= 0)
+            {
+                throw new ValidationException("Booking quantity must be positive.");
+            }
+
+            await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            await using var cmd = new NpgsqlCommand("create_booking", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("p_resourceid", booking.ResourceId);
+            cmd.Parameters.AddWithValue("p_userid", booking.UserId);
+            cmd.Parameters.Add("p_fromdate", NpgsqlTypes.NpgsqlDbType.Date).Value = booking.FromDate.Date;
+            cmd.Parameters.Add("p_todate", NpgsqlTypes.NpgsqlDbType.Date).Value = booking.ToDate.Date;
+            cmd.Parameters.AddWithValue("p_quantity", booking.Quantity);
+
+            var vSuccess = new NpgsqlParameter("v_success", NpgsqlTypes.NpgsqlDbType.Boolean)
+            {
+                Direction = ParameterDirection.Output
+            };
+            var vMessage = new NpgsqlParameter("v_message", NpgsqlTypes.NpgsqlDbType.Text)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            cmd.Parameters.Add(vSuccess);
+            cmd.Parameters.Add(vMessage);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            bool success = (bool)vSuccess.Value;
+            string message = vMessage.Value?.ToString() ?? "Unknown error occurred.";
+
+            if (!success)
+            {
+                throw new ValidationException(message);
+            }
+
+            ResourceViewModel? resource = null;
+            try
+            {
+                resource = await _resourceService.GetResourceById(booking.ResourceId);
+            }
+            catch (NotFoundException) 
+            {
+                throw new ValidationException($"Resource with ID {booking.ResourceId} not found.");
+            }
+
+            int newAvailableQty = resource.Quantity - (resource.UsedQuantity ?? 0); 
+            await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
         }
-        if (booking.ToDate.Date < booking.FromDate.Date)
-        {
-            throw new ValidationException("Booking to date cannot be before from date.");
-        }
-        if (booking.Quantity <= 0)
-        {
-            throw new ValidationException("Booking quantity must be positive.");
-        }
 
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await conn.OpenAsync();
-
-        await using var cmd = new NpgsqlCommand("create_booking", conn)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
-
-        cmd.Parameters.AddWithValue("p_resourceid", booking.ResourceId);
-        cmd.Parameters.AddWithValue("p_userid", booking.UserId);
-        cmd.Parameters.Add("p_fromdate", NpgsqlTypes.NpgsqlDbType.Date).Value = booking.FromDate.Date;
-        cmd.Parameters.Add("p_todate", NpgsqlTypes.NpgsqlDbType.Date).Value = booking.ToDate.Date;
-        cmd.Parameters.AddWithValue("p_quantity", booking.Quantity);
-
-        var vSuccess = new NpgsqlParameter("v_success", NpgsqlTypes.NpgsqlDbType.Boolean)
-        {
-            Direction = ParameterDirection.Output
-        };
-        var vMessage = new NpgsqlParameter("v_message", NpgsqlTypes.NpgsqlDbType.Text)
-        {
-            Direction = ParameterDirection.Output
-        };
-
-        cmd.Parameters.Add(vSuccess);
-        cmd.Parameters.Add(vMessage);
-
-        await cmd.ExecuteNonQueryAsync();
-
-        bool success = (bool)vSuccess.Value;
-        string message = vMessage.Value?.ToString() ?? "Unknown error occurred.";
-
-        if (!success)
-        {
-            throw new ValidationException(message);
-        }
-
-        ResourceViewModel? resource = null;
-        try
-        {
-            resource = await _resourceService.GetResourceById(booking.ResourceId);
-        }
-        catch (NotFoundException) 
-        {
-            throw new ValidationException($"Resource with ID {booking.ResourceId} not found.");
-        }
-
-        int newAvailableQty = resource.Quantity - (resource.UsedQuantity ?? 0); 
-        await _hubContext.Clients.All.SendAsync("ReceiveQuantityUpdate", booking.ResourceId, newAvailableQty);
-    }
-
-     public async Task<(List<BookingViewModel> Bookings, int TotalCount)> GetBookingHistoryFilteredAsync(
+    public async Task<(List<BookingViewModel> Bookings, int TotalCount)> GetBookingHistoryFilteredAsync(
     int? userId = null,
     string? search = null,
     string? sortColumn = "todate",

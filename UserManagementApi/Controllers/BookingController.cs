@@ -25,7 +25,7 @@ public class BookingController : ControllerBase
         return Ok("Booking created successfully.");
     }
 
-    // [Authorize(Roles = "Admin,User")]
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("ResourceHistory")]
     public async Task<IActionResult> GetResourceHistory(
         [FromQuery] int? userId = null,
@@ -48,7 +48,7 @@ public class BookingController : ControllerBase
     }
 
 
-    // [Authorize(Roles = "Admin,User")]
+    [Authorize(Roles = "Admin,User")]
     [HttpGet("ActiveBookings")]
     public async Task<IActionResult> GetActiveBookings(
         [FromQuery] int? userId = null,

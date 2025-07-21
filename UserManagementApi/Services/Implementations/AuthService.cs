@@ -10,11 +10,13 @@ public class AuthService:IAuthService
 {
 
      private readonly IConfiguration _configuration;
+     private readonly IEmailService _emailService;
 
 
-    public AuthService(IConfiguration configuration)
+    public AuthService(IConfiguration configuration, IEmailService emailService)
     {
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<UserViewModel?> AuthenticateUserAsync(string email, string password)
@@ -56,6 +58,8 @@ public class AuthService:IAuthService
 
         var resetLink = $"{baseUrl}/Account/ResetPassword?userId={userId}&token={token}";
         Console.WriteLine("Reset Password Link: " + resetLink);
+
+         await _emailService.SendPasswordResetEmail(email, resetLink);
 
         return (true, token, userId, "A password reset link has been generated.");
     }

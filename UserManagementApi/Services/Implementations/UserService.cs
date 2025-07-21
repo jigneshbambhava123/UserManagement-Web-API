@@ -12,11 +12,14 @@ public class UserService : IUserService
 {
     private readonly IConfiguration _configuration;
     private readonly IHubContext<ResourceHub> _hubContext;
+    private readonly IEmailService _emailService;
 
-    public UserService(IConfiguration configuration, IHubContext<ResourceHub> hubContext)
+
+    public UserService(IConfiguration configuration, IHubContext<ResourceHub> hubContext,IEmailService emailService)
     {
         _configuration = configuration;
         _hubContext = hubContext;
+        _emailService = emailService;
     }
 
     public async Task CreateUser(UserViewModel userViewModel)
@@ -41,6 +44,12 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("p_dateofbirth", userViewModel.Dateofbirth.Date);
 
         await cmd.ExecuteNonQueryAsync();
+
+         await _emailService.SendAccountDetailsEmail(
+            email: userViewModel.Email,
+            username: userViewModel.Firstname + " " + userViewModel.Lastname,
+            password: userViewModel.Password
+        );
 
         var countCmd = new NpgsqlCommand("SELECT COUNT(*) FROM public.users WHERE \"Isdeleted\"=false", conn);
         var countResult = await countCmd.ExecuteScalarAsync();
