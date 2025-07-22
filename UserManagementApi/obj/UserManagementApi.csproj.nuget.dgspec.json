@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "D:\\UserManagement-Web-API\\usermanagementapi\\UserManagementApi.csproj": {}
+    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {}
   },
   "projects": {
-    "D:\\UserManagement-Web-API\\usermanagementapi\\UserManagementApi.csproj": {
+    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\UserManagement-Web-API\\usermanagementapi\\UserManagementApi.csproj",
+        "projectUniqueName": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
         "projectName": "UserManagementApi",
-        "projectPath": "D:\\UserManagement-Web-API\\usermanagementapi\\UserManagementApi.csproj",
-        "packagesPath": "C:\\Users\\jigne\\.nuget\\packages\\",
-        "outputPath": "D:\\UserManagement-Web-API\\usermanagementapi\\obj\\",
+        "projectPath": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
+        "packagesPath": "C:\\Users\\pctr48\\.nuget\\packages\\",
+        "outputPath": "D:\\UserManagement-Web-API\\UserManagementApi\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jigne\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\pctr48\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

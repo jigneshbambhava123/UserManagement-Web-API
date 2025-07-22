@@ -34,7 +34,7 @@ public class BookingController : ControllerBase
         [FromQuery] string? sortDirection = null,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] string? timeFilter = null // ✅ Added
+        [FromQuery] string? timeFilter = null 
     )
     {
         var (bookings, totalCount) = await _bookingService.GetBookingHistoryFilteredAsync(

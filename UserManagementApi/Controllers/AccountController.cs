@@ -35,7 +35,7 @@ public class AccountController : ControllerBase
         var user = await _authService.AuthenticateUserAsync(loginModel.Email, loginModel.Password);
 
         if (user == null || !PasswordHasher.VerifyPassword(loginModel.Password, user.PasswordHash))
-            return Unauthorized(new { message = "Invalid email or password" });
+            return Unauthorized(new { message = "The email or password you entered is incorrect. Please try again." });
 
         var jwtKey = _configuration["JwtSettings:Key"];
         if (string.IsNullOrEmpty(jwtKey))
