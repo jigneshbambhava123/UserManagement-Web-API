@@ -127,3 +127,5 @@ D:\UserManagement-Web-API\usermanagementapi\obj\Debug\net8.0\refint\UserManageme
 D:\UserManagement-Web-API\usermanagementapi\obj\Debug\net8.0\UserManagementApi.pdb
 D:\UserManagement-Web-API\usermanagementapi\obj\Debug\net8.0\UserManagementApi.genruntimeconfig.cache
 D:\UserManagement-Web-API\usermanagementapi\obj\Debug\net8.0\ref\UserManagementApi.dll
+d:\UserManagement-Web-API\UserManagementApi\bin\Debug\net8.0\ExcelDataReader.dll
+d:\UserManagement-Web-API\UserManagementApi\bin\Debug\net8.0\ExcelDataReader.DataSet.dll

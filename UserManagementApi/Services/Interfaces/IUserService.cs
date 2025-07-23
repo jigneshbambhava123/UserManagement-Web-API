@@ -5,6 +5,7 @@ namespace UserManagementApi.Services.Interfaces;
 public interface IUserService
 {
     Task CreateUser(UserViewModel userViewModel);
+    Task<(List<UserModel> successList, List<object> errorList)> BulkInsertionUsers(List<UserModel> users);
     Task UpdateUser(UserViewModel userViewModel);
     Task DeleteUser(int id);
     Task<(List<UserViewModel>, int)> GetUsers(string? search, string? sortColumn, string? sortDirection, int pageNumber, int pageSize);

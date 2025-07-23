@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {}
+    "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {}
   },
   "projects": {
-    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {
+    "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
+        "projectUniqueName": "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
         "projectName": "UserManagementApi",
-        "projectPath": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
+        "projectPath": "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
         "packagesPath": "C:\\Users\\pctr48\\.nuget\\packages\\",
-        "outputPath": "D:\\UserManagement-Web-API\\UserManagementApi\\obj\\",
+        "outputPath": "d:\\UserManagement-Web-API\\UserManagementApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pctr48\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -43,6 +43,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "ExcelDataReader": {
+              "target": "Package",
+              "version": "[3.7.0, )"
+            },
+            "ExcelDataReader.DataSet": {
+              "target": "Package",
+              "version": "[3.7.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.5, )"

@@ -58,6 +58,89 @@ public class UserService : IUserService
         await _hubContext.Clients.All.SendAsync("ReceiveUserCountUpdate", activeUserCount);
     }
 
+    public async Task<(List<UserModel> successList, List<object> errorList)> BulkInsertionUsers(List<UserModel> users)
+    {
+        //in this pass user
+        var successList = new List<UserModel>();
+
+        //in this pass user and rowerrorlist
+        var errorList = new List<object>();
+ 
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+ 
+        foreach (var user in users)
+        {
+            //show list of error of modal
+            var rowErrors = new List<string>();
+
+            try
+            {
+                var validationResults = ModelValidator.validate(user);
+                if (validationResults.Any())
+                    rowErrors.AddRange(validationResults.Select(v => v.ErrorMessage));
+
+                if (rowErrors.Any())
+                {
+                    errorList.Add(new
+                    {
+                        User = user,
+                        Errors = rowErrors
+                    });
+                    continue;
+                }
+                else if(await EmailExists(user.Email)){
+                    errorList.Add(new
+                    {
+                        User = user,
+                        Errors = "Email already exists."
+                    });
+                    continue;
+                }
+                else
+                {
+                    successList.Add(user);
+                }
+ 
+                await using var cmd = new NpgsqlCommand("CALL public.create_user(@p_firstname, @p_lastname, @p_email, @p_password, @p_roleid, @p_phonenumber, @p_passwordhash, @p_dateofbirth::date)", conn);
+                cmd.Parameters.AddWithValue("p_firstname", user.Firstname);
+                cmd.Parameters.AddWithValue("p_lastname", user.Lastname);
+                cmd.Parameters.AddWithValue("p_email", user.Email);
+                cmd.Parameters.AddWithValue("p_password", user.Password);
+                cmd.Parameters.AddWithValue("p_roleid", user.RoleId);
+                cmd.Parameters.AddWithValue("p_phonenumber", user.PhoneNumber);
+                cmd.Parameters.AddWithValue("p_passwordhash", PasswordHasher.HashPassword(user.Password));
+                cmd.Parameters.AddWithValue("p_dateofbirth", user.Dateofbirth.Date);
+ 
+                await cmd.ExecuteNonQueryAsync();
+ 
+                successList.Add(user);
+ 
+                await _emailService.SendAccountDetailsEmail(
+                    email: user.Email,
+                    username: user.Firstname + " " + user.Lastname,
+                    password: user.Password
+                );
+            }
+            catch (Exception ex)
+            {
+                errorList.Add(new
+                {
+                    User = user,
+                    Errors = new List<string>{ex.Message} 
+                });
+            }
+        }
+ 
+        var countCmd = new NpgsqlCommand("SELECT COUNT(*) FROM public.users WHERE \"Isdeleted\"=false", conn);
+        var countResult = await countCmd.ExecuteScalarAsync();
+        int activeUserCount = countResult != null ? Convert.ToInt32(countResult) : 0;
+ 
+        await _hubContext.Clients.All.SendAsync("ReceiveUserCountUpdate", activeUserCount);
+ 
+        return (successList, errorList);
+    }
+
     public async Task UpdateUser(UserViewModel userViewModel)
     {
         await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -153,7 +236,6 @@ public class UserService : IUserService
 
         return (users, totalCount);
     }
-
 
     public async Task<bool> EmailExists(string email, int? excludeUserId = null)
     {

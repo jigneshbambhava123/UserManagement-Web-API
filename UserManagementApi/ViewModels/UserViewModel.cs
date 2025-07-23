@@ -14,3 +14,4 @@ public class UserViewModel
     public bool IsActive { get; set; }
     public DateTime Dateofbirth { get; set; }  
 }
+	
