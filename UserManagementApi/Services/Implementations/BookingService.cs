@@ -188,7 +188,29 @@ public class BookingService : IBookingService
         return (bookings, totalCount);
     }
 
+    public async Task UpdateToDate(int bookingId, DateTime toDate)
+    {
+        if (toDate.Date < DateTime.Today)
+            throw new ValidationException("ToDate cannot be less than today date.");
+    
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+    
+        var cmd = new NpgsqlCommand("SELECT 1 FROM bookings WHERE id = @id", conn);
+        cmd.Parameters.AddWithValue("id", bookingId);
 
+        var reader = await cmd.ExecuteScalarAsync();
+
+        if (reader == null)
+            throw new NotFoundException($"Booking with ID {bookingId} not exist.");
+        
+        var updateCmd = new NpgsqlCommand("CALL public.update_todate(@bookingId, @toDate)", conn);
+        
+        updateCmd.Parameters.AddWithValue("bookingId", bookingId);
+        updateCmd.Parameters.Add("toDate", NpgsqlTypes.NpgsqlDbType.Date).Value = toDate.Date;
+
+        await updateCmd.ExecuteNonQueryAsync();
+    }
 
     public async Task ReleaseExpiredBookings()
     {

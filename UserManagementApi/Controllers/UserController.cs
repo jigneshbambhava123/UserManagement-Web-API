@@ -63,8 +63,8 @@ public class UserController : ControllerBase
                     Lastname = table.Rows[i][1].ToString()?? string.Empty,
                     Email = table.Rows[i][2].ToString()?? string.Empty,
                     Password = table.Rows[i][3].ToString(),                    
-                    RoleId = int.TryParse(table.Rows[i][4].ToString(), out var roleId)?roleId:0 ,
-                    PhoneNumber = long.TryParse(table.Rows[i][4].ToString(), out var phonenumber)?phonenumber:0 ,
+                    RoleId = int.TryParse(table.Rows[i][4].ToString(), out int roleId)?roleId:0 ,
+                    PhoneNumber = long.TryParse(table.Rows[i][5].ToString(), out var phonenumber)?phonenumber:0 ,
                     // PhoneNumber = Convert.ToInt64(table.Rows[i][5].ToString())?? string.Empty,
                     Dateofbirth = DateTime.TryParse(table.Rows[i][6].ToString(), out var dob) ? dob : DateTime.MinValue,
                 });  

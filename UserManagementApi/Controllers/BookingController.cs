@@ -25,6 +25,13 @@ public class BookingController : ControllerBase
         return Ok("Booking created successfully.");
     }
 
+    [HttpPut]
+    public async Task<IActionResult> UpdateToDate(int bookingId,DateTime toDate)
+    {
+        await _bookingService.UpdateToDate(bookingId, toDate);
+        return Ok(new { message = "Booking todate updated successfully." });
+    }
+
     [Authorize(Roles = "Admin,User")]
     [HttpGet("ResourceHistory")]
     public async Task<IActionResult> GetResourceHistory(

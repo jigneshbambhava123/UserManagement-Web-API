@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {}
+    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {}
   },
   "projects": {
-    "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {
+    "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
+        "projectUniqueName": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
         "projectName": "UserManagementApi",
-        "projectPath": "d:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
+        "projectPath": "D:\\UserManagement-Web-API\\UserManagementApi\\UserManagementApi.csproj",
         "packagesPath": "C:\\Users\\pctr48\\.nuget\\packages\\",
-        "outputPath": "d:\\UserManagement-Web-API\\UserManagementApi\\obj\\",
+        "outputPath": "D:\\UserManagement-Web-API\\UserManagementApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\pctr48\\AppData\\Roaming\\NuGet\\NuGet.Config"
