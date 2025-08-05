@@ -32,7 +32,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", 
-        corsBuilder => corsBuilder.WithOrigins("http://localhost:5272", "http://localhost:5173") 
+        corsBuilder => corsBuilder.WithOrigins("http://localhost:5272", "http://localhost:5173","http://localhost:3000") 
                                   .AllowAnyHeader()
                                   .AllowAnyMethod()
                                   .AllowCredentials());
@@ -45,6 +45,8 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ApiExceptionFilter>();
 });
+builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();

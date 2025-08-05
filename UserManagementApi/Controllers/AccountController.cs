@@ -17,13 +17,17 @@ public class AccountController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ITokenService _tokenService;
     private readonly IUserService _userService;
+    private readonly IOtpService _otpService;
+    private readonly IConfigurationService _configurationService;
 
-    public AccountController(IAuthService authService, IConfiguration configuration, ITokenService tokenService,IUserService userService)
+    public AccountController(IAuthService authService, IConfiguration configuration, ITokenService tokenService,IUserService userService,IConfigurationService configurationService,IOtpService otpService)
     {
         _authService = authService;
         _configuration = configuration;
         _tokenService = tokenService;
         _userService = userService;
+        _otpService = otpService;
+        _configurationService = configurationService;
     }
 
     [HttpPost("Login")]
@@ -36,6 +40,15 @@ public class AccountController : ControllerBase
 
         if (user == null || !PasswordHasher.VerifyPassword(loginModel.Password, user.PasswordHash))
             return Unauthorized(new { message = "The email or password you entered is incorrect. Please try again." });
+
+        bool isMfaEnabled = await _configurationService.IsMfaEnabledAsync();
+ 
+        if (isMfaEnabled)
+        {
+            await _otpService.SendOtpEmailAsync(user.Email);
+            
+            return Ok(new { message = "OTP sent to email.", email = user.Email });
+        }
 
         var jwtKey = _configuration["JwtSettings:Key"];
         if (string.IsNullOrEmpty(jwtKey))
@@ -53,6 +66,35 @@ public class AccountController : ControllerBase
         );
         Console.WriteLine("token"+token);
 
+        return Ok(new { token });
+    }
+
+    [HttpPost("VerifyOtp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] OtpVerifyViewModel request)
+    {
+        var user = await _authService.GetUserByEmailAsync(request.Email);
+        if (user == null)
+            return NotFound(new { message = "User not found." });
+    
+        var isValid = await _otpService.VerifyOtpAsync(request.Email, request.OtpCode);
+        if (!isValid)
+            return Unauthorized(new { message = "Invalid or expired OTP." });
+    
+        var jwtKey = _configuration["JwtSettings:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+            return StatusCode(500, "JWT Key not configured");
+    
+        var token = await _tokenService.GenerateToken(
+            user.Firstname,
+            user.Email,
+            user.RoleName,
+            false,
+            jwtKey,
+            "localhost",
+            "localhost",
+            user.Id
+        );
+    
         return Ok(new { token });
     }
 

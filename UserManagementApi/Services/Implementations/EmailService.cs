@@ -83,5 +83,42 @@ public class EmailService: IEmailService
             Console.WriteLine($"Error sending account details email: {ex.Message}");
         }
     }
+    
+    public async Task SendOtpEmail(string email, string otpCode)
+    {
+        try
+        {
+            var smtpClient = new SmtpClient("smtp.gmail.com")
+            {
+                Port = 587,
+                Credentials = new NetworkCredential("jigneshbambhava111@gmail.com", "wvyu jzjk xegr jzak"),
+                EnableSsl = true,
+            };
+    
+            string emailBody = $@"
+            <html>
+            <body>
+                <p>Hello,</p>
+                <p>Your OTP code is: <strong>{otpCode}</strong></p>
+                <p>This code will expire in 10 minutes.</p>
+            </body>
+            </html>";
+    
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress("jigneshbambhava111@gmail.com", "UserManagement"),
+                Subject = "Your OTP Verification Code",
+                Body = emailBody,
+                IsBodyHtml = true,
+            };
+    
+            mailMessage.To.Add(email);
+            await smtpClient.SendMailAsync(mailMessage);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending OTP email: {ex.Message}");
+        }
+    }
 }
     

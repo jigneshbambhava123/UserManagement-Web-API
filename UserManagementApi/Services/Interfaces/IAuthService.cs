@@ -8,4 +8,5 @@ public interface IAuthService
     Task<(bool Success, string Token, int UserId, string Message)> ForgotPasswordAsync(string email, string baseUrl);
     Task<bool> ValidateResetTokenAsync(int userId, string token);
     Task<string> ResetPasswordAsync(int userId, string token, string newPassword);
+    Task<UserViewModel?> GetUserByEmailAsync(string email);
 }
