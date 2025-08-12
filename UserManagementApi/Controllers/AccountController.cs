@@ -76,9 +76,9 @@ public class AccountController : ControllerBase
         if (user == null)
             return NotFound(new { message = "User not found." });
     
-        var isValid = await _otpService.VerifyOtpAsync(request.Email, request.OtpCode);
+        var isValid = await _otpService.VerifyOtpAsync(request.Email, request.Otp);
         if (!isValid)
-            return Unauthorized(new { message = "Invalid or expired OTP." });
+            return Unauthorized(new { message = "OTP is invalid or expired. Please obtain a new OTP." });
     
         var jwtKey = _configuration["JwtSettings:Key"];
         if (string.IsNullOrEmpty(jwtKey))
@@ -88,7 +88,7 @@ public class AccountController : ControllerBase
             user.Firstname,
             user.Email,
             user.RoleName,
-            false,
+            request.RememberMe,
             jwtKey,
             "localhost",
             "localhost",

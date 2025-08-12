@@ -100,7 +100,7 @@ public class EmailService: IEmailService
             <body>
                 <p>Hello,</p>
                 <p>Your OTP code is: <strong>{otpCode}</strong></p>
-                <p>This code will expire in 10 minutes.</p>
+                <p>This code will expire in 5 minutes.</p>
             </body>
             </html>";
     

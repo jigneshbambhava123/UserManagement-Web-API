@@ -38,7 +38,6 @@ namespace UserManagementApi.Services.Implementations
             await _emailService.SendOtpEmail(email, otpCode);
         }
 
- 
         public async Task<bool> VerifyOtpAsync(string email, string otpCode)
         {
             await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));

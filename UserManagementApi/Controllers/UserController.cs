@@ -83,7 +83,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserViewModel userViewModel)
     {
@@ -99,7 +99,7 @@ public class UserController : ControllerBase
         return Ok("User deleted successfully.");
     }
 
-    // [Authorize(Roles = "Admin,User")]
+    [Authorize(Roles = "Admin,User")]
     [HttpGet]
     public async Task<IActionResult> GetUsers(
         [FromQuery] string? search,
