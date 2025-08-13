@@ -11,4 +11,6 @@ public interface IUserService
     Task<(List<UserViewModel>, int)> GetUsers(string? search, string? sortColumn, string? sortDirection, int pageNumber, int pageSize);
     Task<UserViewModel?> GetUserById(int id);
     Task<bool> EmailExists(string email, int? excludeUserId = null);
+    Task UpdateUserLanguage(int userId, string language);
+    Task<string> GetUserLanguage(int userId);
 }

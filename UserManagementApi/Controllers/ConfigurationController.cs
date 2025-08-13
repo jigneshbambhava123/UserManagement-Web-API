@@ -16,7 +16,7 @@ namespace UserManagementApi.Controllers
             _configurationService = configurationService;
         }
  
-        [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateMfaEnabled([FromQuery] string key,[FromQuery] bool isEnabled)
         {

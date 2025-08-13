@@ -280,4 +280,51 @@ public class UserService : IUserService
         }
         throw new NotFoundException($"User with ID {id} not found.");
     }
+
+    public async Task UpdateUserLanguage(int userId, string language)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var existsCmd = new NpgsqlCommand("SELECT 1 FROM public.users WHERE id=@id AND \"Isdeleted\"=false", conn);
+        existsCmd.Parameters.AddWithValue("id", userId);
+        var exists = await existsCmd.ExecuteScalarAsync() != null;
+        if (!exists)
+        {
+            throw new NotFoundException($"User with ID {userId} not found.");
+        }
+
+        await using var cmd = new NpgsqlCommand("CALL public.update_user_language(@p_userid, @p_language)", conn);
+        cmd.Parameters.AddWithValue("p_userid", userId);
+        cmd.Parameters.AddWithValue("p_language", language);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<string> GetUserLanguage(int userId)
+    {
+        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var existsCmd = new NpgsqlCommand("SELECT 1 FROM public.users WHERE id=@id AND \"Isdeleted\"=false", conn);
+        existsCmd.Parameters.AddWithValue("id", userId);
+        var exists = await existsCmd.ExecuteScalarAsync() != null;
+        if (!exists)
+        {
+            throw new NotFoundException($"User with ID {userId} not found.");
+        }
+
+        var cmd = new NpgsqlCommand("SELECT public.get_user_language(@p_userid)", conn);
+        cmd.Parameters.AddWithValue("p_userid", userId);
+
+        var result = await cmd.ExecuteScalarAsync();
+
+        if (result == null)
+        {
+            throw new NotFoundException($"User with ID {userId} not found.");
+        }
+
+        return result.ToString(); 
+    }
+
 }

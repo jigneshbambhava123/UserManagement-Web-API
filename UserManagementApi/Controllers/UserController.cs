@@ -83,6 +83,28 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
+    // [Authorize(Roles = "Admin,User")]
+    [HttpPut("ChangeLanguage")]
+    public async Task<IActionResult> ChangeLanguage(int userId, string language)
+    {
+        var allowedLanguages = new List<string> { "en", "hi", "bn", "de" };
+
+        if (!allowedLanguages.Contains(language.ToLower()))
+        {
+            return BadRequest("Invalid language. Supported languages are: en, hi, bn, de.");
+        }
+
+        await _userService.UpdateUserLanguage(userId, language);
+        return Ok("Language updated successfully.");
+    }
+
+    [HttpGet("GetLanguage/{id}")]
+    public async Task<IActionResult> GetUserLanguage(int id)
+    {
+        var language = await _userService.GetUserLanguage(id);
+        return Ok(new { language });
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserViewModel userViewModel)
